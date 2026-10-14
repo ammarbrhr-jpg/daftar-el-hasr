@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>سجل المرضى</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e8edf6; --surface:#ffffff; --ink:#14213d; --muted:#55627f; --line:#d3dbea;
+  --navy:#14213d; --navy2:#223a70; --red:#c1272d;
+  --adm:#1d5fb4; --adm-s:#e3edfb;
+  --dis:#1f7a4d; --dis-s:#dcf2e6;
+  --pas:#c1272d; --pas-s:#fbe0e1;
+  --ref:#a85f00; --ref-s:#fdeacb;
+  --badge-ink:#ffffff;
+  --doc-s:55%; --doc-l:91%; --doc-bar:40%;
+  --head:#14213d; --head-ink:#ffffff;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a1020; --surface:#131c32; --ink:#e8ecf7; --muted:#9aa6c4; --line:#27335a;
+    --navy:#9db4ee; --navy2:#223a70; --red:#ff7b80;
+    --adm:#7fb0ff; --adm-s:#172846;
+    --dis:#5fd09a; --dis-s:#13302a;
+    --pas:#ff7b80; --pas-s:#3b1c20;
+    --ref:#f0b552; --ref-s:#382c11;
+    --badge-ink:#0a1020;
+    --doc-s:35%; --doc-l:20%; --doc-bar:55%;
+    --head:#0a1020; --head-ink:#e8ecf7; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a1020; --surface:#131c32; --ink:#e8ecf7; --muted:#9aa6c4; --line:#27335a;
+  --navy:#9db4ee; --navy2:#223a70; --red:#ff7b80;
+  --adm:#7fb0ff; --adm-s:#172846;
+  --dis:#5fd09a; --dis-s:#13302a;
+  --pas:#ff7b80; --pas-s:#3b1c20;
+  --ref:#f0b552; --ref-s:#382c11;
+  --badge-ink:#0a1020;
+  --doc-s:35%; --doc-l:20%; --doc-bar:55%;
+  --head:#0a1020; --head-ink:#e8ecf7; color-scheme:dark;
+}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:"Tajawal",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;font-size:16px;line-height:1.55}
+.ic{width:1.15em;height:1.15em;flex:none;vertical-align:-0.2em}
+
+/* banner */
+.banner{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f1a33 0%,#223a70 100%);color:#fff;border-bottom:4px solid #c1272d}
+.banner .pulse{position:absolute;inset-inline:0;bottom:6px;width:100%;height:54px;opacity:.16;pointer-events:none}
+.banner-in{position:relative;max-width:1240px;margin:0 auto;padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:46px;height:46px;border-radius:12px;background:#c1272d;display:grid;place-items:center;color:#fff}
+.brand .logo .ic{width:26px;height:26px}
+h1{margin:0;font-size:26px;font-weight:800;line-height:1.2}
+.date{font-size:14px;opacity:.85}
+.tabs{display:inline-flex;background:rgba(255,255,255,.12);border-radius:10px;padding:3px}
+.tabs button{font:inherit;font-weight:700;border:0;background:transparent;color:#fff;padding:8px 18px;border-radius:8px;cursor:pointer;min-height:40px}
+.tabs button[aria-pressed="true"]{background:#fff;color:#14213d}
+.tabs button:focus-visible{outline:3px solid #ffd166;outline-offset:1px}
+
+.wrap{max-width:1240px;margin:0 auto;padding:16px}
+.btn{font:inherit;font-weight:700;border:1.5px solid var(--navy);background:transparent;color:var(--navy);padding:8px 14px;border-radius:8px;cursor:pointer;min-height:40px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--adm-s)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.fc:focus-visible,.chip:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.btn.primary{background:#c1272d;border-color:#c1272d;color:#fff}
+.btn.primary:hover{filter:brightness(.92)}
+.btn.small{padding:3px 10px;min-height:32px;font-size:14px}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn.danger:hover{background:var(--pas-s)}
+.btn[disabled]{opacity:.6;cursor:wait}
+.mbar{display:flex;flex-wrap:wrap;gap:8px;background:var(--surface);border:1.5px dashed var(--navy);border-radius:10px;padding:10px 12px;margin-bottom:14px;align-items:center}
+.mbar .lbl{font-weight:800;color:var(--navy);margin-inline-end:6px}
+.dup{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--ref-s);color:var(--ref);border:1.5px solid var(--ref);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-weight:700}
+
+/* filter cards */
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
+.fc{font:inherit;text-align:start;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:10px}
+.fc .fi{width:40px;height:40px;border-radius:10px;background:var(--cs);color:var(--c);display:grid;place-items:center;flex:none}
+.fc .fi .ic{width:22px;height:22px}
+.fc .num{font-size:28px;font-weight:800;line-height:1;color:var(--c)}
+.fc .lab{font-size:14px;color:var(--muted);font-weight:700}
+.fc[aria-pressed="true"]{background:var(--cs);outline:2.5px solid var(--c);outline-offset:-1px}
+.fc.c-all{--c:var(--navy);--cs:var(--adm-s)}
+.fc.c-admitted{--c:var(--adm);--cs:var(--adm-s)}
+.fc.c-discharged{--c:var(--dis);--cs:var(--dis-s)}
+.fc.c-passed{--c:var(--pas);--cs:var(--pas-s)}
+.fc.c-referred{--c:var(--ref);--cs:var(--ref-s)}
+
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.filters .search{flex:1 1 200px;min-width:160px}
+.filters .search input{width:100%}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
+textarea{width:100%;resize:vertical;min-height:72px}
+
+.census{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:14px}
+.census .title{font-weight:800;color:var(--navy);margin-inline-end:4px}
+  .duties{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:14px}
+  .duties .title{font-weight:800;color:var(--navy);margin-inline-end:4px}
+  .duty-page{margin:12px 0;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--card);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .duty-page h2{font-size:1.08rem;margin:0}
+  .duty-page .sub{font-size:.88rem;color:var(--muted);margin-top:4px}
+  .duty-chip{font:inherit;font-weight:700;border:1.5px solid var(--duty);background:var(--duty-bg);color:var(--duty);padding:5px 12px;border-radius:12px;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+  .duty-chip b{background:var(--duty);color:#fff;border-radius:8px;min-width:24px;text-align:center;padding:0 7px;font-size:14px}
+  .duty-chip[aria-pressed="true"]{background:var(--duty);color:#fff}
+  .duty-chip[aria-pressed="true"] b{background:#fff;color:var(--duty)}
+  .duty-chip.zero{opacity:.55}
+.chip{font:inherit;font-weight:700;border:1.5px solid var(--adm);background:var(--adm-s);color:var(--adm);padding:4px 12px;border-radius:999px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.chip b{background:var(--adm);color:var(--badge-ink);border-radius:999px;min-width:24px;text-align:center;padding:0 7px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--adm);color:var(--badge-ink)}
+.chip[aria-pressed="true"] b{background:var(--badge-ink);color:var(--adm)}
+.chip.zero{opacity:.55}
+
+/* table */
+.tablebox{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow-x:auto;box-shadow:0 2px 10px rgba(20,33,61,.08)}
+table{border-collapse:collapse;width:100%;min-width:960px}
+thead th{background:var(--head);color:var(--head-ink);text-align:start;font-weight:700;padding:11px 12px;white-space:nowrap;font-size:15px;border-bottom:3px solid #c1272d}
+tbody td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr.docstart td{border-top:3px solid hsl(var(--h) 55% var(--doc-bar))}
+td.doc{background:hsl(var(--h) var(--doc-s) var(--doc-l));border-inline-end:5px solid hsl(var(--h) 55% var(--doc-bar));min-width:180px;width:200px}
+td.doc .dhead{display:flex;align-items:center;gap:8px}
+td.doc .dico{width:34px;height:34px;border-radius:50%;background:hsl(var(--h) 55% var(--doc-bar));color:#fff;display:grid;place-items:center;flex:none}
+td.doc .dico .ic{width:19px;height:19px}
+td.doc .dname{font-weight:800;color:var(--ink);font-size:17px;line-height:1.3}
+td.doc .dstat{font-size:13px;color:var(--muted);margin:6px 0 0}
+td.doc .dact{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+td.num{color:var(--muted);font-weight:700;width:44px;text-align:center}
+td.pt{font-weight:800}
+td.notes{max-width:240px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+td.empty{color:var(--muted);font-style:italic}
+td.place{white-space:nowrap;font-weight:700}
+.dash{color:var(--muted)}
+tr.r-admitted td.c{background:var(--adm-s)}
+tr.r-discharged td.c{background:var(--dis-s)}
+tr.r-passed td.c{background:var(--pas-s)}
+tr.r-referred td.c{background:var(--ref-s)}
+tr.r-admitted td.num{box-shadow:inset 4px 0 0 var(--adm)}
+tr.r-discharged td.num{box-shadow:inset 4px 0 0 var(--dis)}
+tr.r-passed td.num{box-shadow:inset 4px 0 0 var(--pas)}
+tr.r-referred td.num{box-shadow:inset 4px 0 0 var(--ref)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 11px 3px 9px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;direction:ltr;color:var(--badge-ink)}
+.badge .bi{display:inline-flex}
+.badge .ic{width:16px;height:16px}
+.f-admitted{background:var(--adm)} .f-discharged{background:var(--dis)} .f-passed{background:var(--pas)} .f-referred{background:var(--ref)}
+.actcol{display:none}
+table.manage .actcol{display:table-cell}
+td.act{white-space:nowrap}
+td.act .btn+.btn{margin-inline-start:4px}
+.state{padding:28px 16px;text-align:center;color:var(--muted)}
+
+dialog{border:0;border-radius:12px;padding:0;background:var(--surface);color:var(--ink);width:min(540px,94vw);max-height:92vh;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,15,30,.55)}
+dialog form,dialog .dbody{padding:18px}
+dialog h2{margin:0 0 12px;font-size:20px;color:var(--navy)}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-weight:700;font-size:14px;margin-bottom:4px}
+.field input,.field select{width:100%}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dlgact{display:flex;gap:8px;justify-content:flex-start;margin-top:6px}
+.err{color:var(--red);font-weight:700;margin:0 0 10px}
+.err:empty{display:none}
+.prow{display:flex;gap:6px;margin-bottom:8px}
+.prow input{flex:1}
+.hint{font-size:13px;color:var(--muted);margin:0 0 10px}
+.toast{position:fixed;inset-inline:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));margin:auto;width:max-content;max-width:90vw;background:var(--navy2);color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+.toast.show{opacity:1}
+.note{font-size:13px;color:var(--muted);margin-top:12px}
+@media (max-width:900px){ .cards{grid-template-columns:repeat(2,1fr)} .fc.c-all{grid-column:1/-1} }
+@media (max-width:560px){ .row2{grid-template-columns:1fr} h1{font-size:22px} .fc .num{font-size:24px} }
+@media (prefers-reduced-motion: reduce){ .toast{transition:none} }
+</style>
+</head>
+<body>
+
+<header class="banner">
+  <svg class="pulse" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30h260l18-22 28 44 22-30 14 8h858" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>
+  <div class="banner-in">
+    <div class="brand">
+      <div class="logo" id="logoIc"></div>
+      <div><h1>سجل المرضى</h1><div class="date" id="today"></div></div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="الصفحات">
+      <button type="button" data-mode="view" aria-pressed="true">العرض</button>
+      <button type="button" data-mode="manage" aria-pressed="false" id="tabManage">الإدارة</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="mbar" id="mbar" hidden>
+    <span class="lbl">إدارة السجل:</span>
+    <button class="btn primary" type="button" id="addPatientTop">إضافة مريض</button>
+    <button class="btn" type="button" id="addDoctorTop">إضافة طبيب</button>
+  </section>
+  <div class="dup" id="dup" hidden></div>
+
+  <section class="cards" id="cards" aria-label="تصفية حسب الحالة"></section>
+
+  <section class="filters">
+    <select id="fDoctorSel" aria-label="الطبيب"></select>
+    <select id="fPlaceSel" aria-label="المكان"></select>
+    <div class="search"><input type="search" id="q" placeholder="بحث بالاسم أو التشخيص أو الشكوى" aria-label="بحث"></div>
+  </section>
+
+  <section class="census" id="census" aria-label="حصر المرضى في المستشفى حسب المكان"></section>
+  <section class="duties" id="duties" aria-label="حصر المرضى حسب duty"></section>
+  <section id="dutyPage" class="duty-page" hidden></section>
+
+  <div class="tablebox">
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>الطبيب</th><th>Duty</th><th>#</th><th>Pt name</th><th>Main complaint</th><th>Diagnosis</th><th>Place</th><th>Fate</th><th>Notes</th><th class="actcol">إجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="state" id="state" hidden></div>
+  </div>
+  <p class="note" id="storeNote"></p>
+</main>
+
+<dialog id="dlgDoctor">
+  <form id="fDoctor" novalidate>
+    <h2 id="dlgDoctorTitle">إضافة طبيب</h2>
+    <label class="field"><span>اسم الطبيب</span><input id="docName" required maxlength="80" autocomplete="off"></label>
+    <p class="err" id="docErr" role="alert"></p>
+    <div class="dlgact">
+      <button class="btn primary" type="submit" id="docSave">حفظ الطبيب</button>
+      <button class="btn" type="button" data-close>إلغاء</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgPatient">
+  <form id="fPatient" novalidate>
+    <h2 id="dlgPatientTitle">إضافة مريض</h2>
+    <label class="field"><span>الطبيب</span><select id="pDoctor"></select></label>
+    <label class="field"><span>Duty date (تاريخ المناوبة)</span><input id="pDuty" type="date" required></label>
+    <label class="field"><span>Pt name</span><input id="pName" required maxlength="120" autocomplete="off"></label>
+    <label class="field"><span>Main complaint</span><input id="pComplaint" maxlength="300" autocomplete="off"></label>
+    <label class="field"><span>Diagnosis</span><input id="pDiagnosis" maxlength="300" autocomplete="off"></label>
+    <div class="row2">
+      <label class="field"><span>Place</span><select id="pPlace"></select></label>
+      <label class="field"><span>Fate</span>
+        <select id="pFate">
+          <option value="admitted">Admitted</option>
+          <option value="discharged">Discharged</option>
+          <option value="passed">Passed</option>
+          <option value="referred">Referred</option>
+        </select></label>
+    </div>
+    <label class="field"><span>Notes</span><textarea id="pNotes" maxlength="1000"></textarea></label>
+    <p class="err" id="patErr" role="alert"></p>
+    <div class="dlgact">
+      <button class="btn primary" type="submit" id="patSave">حفظ المريض</button>
+      <button class="btn" type="button" data-close>إلغاء</button>
+    </div>
+  </form>
+</dialog>
+
+
+
+<dialog id="dlgConfirm">
+  <form method="dialog">
+    <h2 id="confirmTitle">تأكيد</h2>
+    <p id="confirmText"></p>
+    <div class="dlgact">
+      <button class="btn danger" type="submit" value="yes" id="confirmYes">تأكيد</button>
+      <button class="btn" type="submit" value="no">إلغاء</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  var DEFAULT_PLACES = ["C1","C2","Resuscitation","ICU","Male Ward","Female Ward","Private","Other / أخرى"];
+  var HUES = [212,160,28,280,340,190,48,100];
+  function svg(inner){ return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>'; }
+  var ICON = {
+    bed: svg('<path d="M3 19V6"/><path d="M3 14h18v5"/><path d="M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/>'),
+    check: svg('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'),
+    cross: svg('<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>'),
+    out: svg('<path d="M7 17L17 7"/><path d="M9 7h8v8"/>'),
+    people: svg('<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5a3 3 0 0 1 0 6"/><path d="M18 20a6 6 0 0 0-3-5"/>'),
+    steth: svg('<path d="M6 3v6a4 4 0 0 0 8 0V3"/><path d="M10 13v2a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="12" r="2"/>'),
+    pulse: svg('<path d="M3 12h4l2-6 4 12 2-6h6"/>')
+  };
+  var FATES = {
+    admitted:  {label:"Admitted",  icon:ICON.bed},
+    discharged:{label:"Discharged",icon:ICON.check},
+    passed:    {label:"Passed",    icon:ICON.cross},
+    referred:  {label:"Referred",  icon:ICON.out}
+  };
+  var FATE_KEYS = ["admitted","discharged","passed","referred"];
+
+  var state = { doctors:[], patients:[], places:DEFAULT_PLACES.slice(), mode:"view", filter:"all", doctorFilter:"", placeFilter:"", dutyFilter:"", q:"", ready:false, canManage:true, sig:{} };
+  var backend = null;
+  var busy = false;
+  var $ = function(id){ return document.getElementById(id); };
+
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function iconEl(html, cls){ var s = el("span", cls || ""); s.innerHTML = html; return s; }
+  function toast(msg){
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove("show"); }, 2800);
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function hash(s){ var h = 5381; for (var i=0;i<s.length;i++){ h = ((h<<5)+h+s.charCodeAt(i))|0; } return (h>>>0).toString(36); }
+  function nameKey(n){
+    return String(n||"").replace(/[\u064B-\u0652\u0640]/g,"").replace(/[\u0623\u0625\u0622\u0671]/g,"\u0627")
+      .replace(/\u0649/g,"\u064A").replace(/\u0629/g,"\u0647").replace(/\s+/g," ").trim().toLowerCase();
+  }
+  function fateOf(p){ return (p && FATES[p.fate]) ? p.fate : "admitted"; }
+  function placeEmoji(n){
+    var s = String(n||"").toLowerCase();
+    if (/resus/.test(s)) return "\uD83D\uDEA8";
+    if (/icu/.test(s)) return "\uD83D\uDC93";
+    if (/female/.test(s)) return "\uD83D\uDEBA";
+    if (/male/.test(s)) return "\uD83D\uDEB9";
+    if (/^c\s*\d/.test(s)) return "\uD83E\uDE7A";
+    if (/private/.test(s)) return "\uD83D\uDD12";
+    return "\uD83D\uDCCD";
+  }
+  function sortedDoctors(){ return state.doctors.slice().sort(function(a,b){ return (a.createdAt||0)-(b.createdAt||0); }); }
+  function mergePlaces(saved){
+    var result = DEFAULT_PLACES.slice();
+    (saved || []).map(String).forEach(function(place){ if (result.indexOf(place)===-1) result.push(place); });
+    return result;
+  }
+  function upsert(arr, item){ for (var i=0;i<arr.length;i++){ if (arr[i].id===item.id){ arr[i]=item; return; } } arr.push(item); }
+
+  /* ---------------- storage ---------------- */
+  function localBackend(){
+    var KEY = "patient-registry-v1";
+    try { var raw = localStorage.getItem(KEY); if (raw){ var d = JSON.parse(raw);
+      state.doctors = d.doctors||[]; state.patients = d.patients||[]; if (d.places && d.places.length) state.places = mergePlaces(d.places); } } catch(e){}
+    function persist(){
+      try { localStorage.setItem(KEY, JSON.stringify({doctors:state.doctors, patients:state.patients, places:state.places})); }
+      catch(e){ toast("تعذّر الحفظ على هذا الجهاز"); }
+    }
+    return {
+      kind:"local",
+      saveDoctor:function(doc){ upsert(state.doctors, doc); persist(); render(); return Promise.resolve(); },
+      deleteDoctors:function(ids){ state.doctors = state.doctors.filter(function(x){ return ids.indexOf(x.id)===-1; }); persist(); render(); return Promise.resolve(); },
+      savePatients:function(arr){ arr.forEach(function(p){ upsert(state.patients, p); }); persist(); render(); return Promise.resolve(); },
+      deletePatients:function(ids){ state.patients = state.patients.filter(function(x){ return ids.indexOf(x.id)===-1; }); persist(); render(); return Promise.resolve(); },
+      savePlaces:function(list){ state.places = list.slice(); persist(); render(); return Promise.resolve(); }
+    };
+  }
+  function dbBackend(db){
+    var docs = db.collection("doctors"), pats = db.collection("patients"), placesDoc = db.doc("settings/places");
+    function strip(o){ var c = {}; for (var k in o){ if (k!=="id") c[k]=o[k]; } return c; }
+    function applyList(kind, s){
+      try {
+        var arr = s.docs.map(function(d){ var v = Object.assign({}, d.data()||{}); v.id = d.id; return v; });
+        var sig = JSON.stringify(arr);
+        if (state.ready && state.sig[kind]===sig) return;
+        state.sig[kind] = sig; state[kind] = arr; state.ready = true; render();
+      } catch(e){ console.error(e); toast("خطأ في عرض البيانات"); }
+    }
+    function applyPlaces(s){
+      try {
+        var v = s.exists ? s.data() : null;
+        var l = (v && v.list) ? Array.prototype.slice.call(v.list).map(String) : [];
+        var next = mergePlaces(l);
+        var sig = JSON.stringify(next);
+        if (state.sig.places===sig) return;
+        state.sig.places = sig; state.places = next; render();
+      } catch(e){ console.error(e); }
+    }
+    function refresh(){
+      return Promise.all([docs.get(), pats.get(), placesDoc.get()]).then(function(r){
+        applyList("doctors", r[0]); applyList("patients", r[1]); applyPlaces(r[2]);
+      }).catch(function(e){ console.error(e); });
+    }
+    docs.onSnapshot(function(s){ applyList("doctors", s); }, function(e){ console.error(e); });
+    pats.onSnapshot(function(s){ applyList("patients", s); }, function(e){ console.error(e); });
+    placesDoc.onSnapshot(function(s){ applyPlaces(s); }, function(e){ console.error(e); });
+    refresh();
+    setInterval(function(){ if (!document.hidden) refresh(); }, 8000);
+    function guard(p){ return p.catch(function(e){
+      toast(e && e.code==="invalid_argument" ? "لا تملك صلاحية التعديل" : "تعذّر الحفظ، حاول مرة أخرى"); throw e; }); }
+    return {
+      kind:"db",
+      saveDoctor:function(doc){ return guard(docs.doc(doc.id).set(strip(doc))).then(refresh); },
+      deleteDoctors:function(ids){ return guard(Promise.all(ids.map(function(id){ return docs.doc(id).delete(); }))).then(refresh); },
+      savePatients:function(arr){ return guard(Promise.all(arr.map(function(p){ return pats.doc(p.id).set(strip(p)); }))).then(refresh); },
+      deletePatients:function(ids){ return guard(Promise.all(ids.map(function(id){ return pats.doc(id).delete(); }))).then(refresh); },
+      savePlaces:function(list){ return guard(placesDoc.set({list:list.slice()})).then(refresh); }
+    };
+  }
+
+  /* ---------------- render ---------------- */
+  function basePatients(){
+    return state.patients.filter(function(p){ return !state.doctorFilter || p.doctorId===state.doctorFilter; });
+  }
+  function placeMatch(p){
+    var f = state.placeFilter;
+    if (!f) return true;
+    if (f==="__none") return !p.place || state.places.indexOf(p.place)===-1;
+    return p.place===f;
+  }
+  function matches(p){
+    if (state.filter!=="all" && fateOf(p)!==state.filter) return false;
+    if (!placeMatch(p)) return false;
+    if (state.dutyFilter && (p.dutyDate||"__none")!==state.dutyFilter) return false;
+    var q = state.q.trim().toLowerCase();
+    if (!q) return true;
+    return [p.name,p.complaint,p.diagnosis,p.place,p.notes,p.dutyDate,dutyLabel(p.dutyDate)].join(" ").toLowerCase().indexOf(q)!==-1;
+  }
+  function syncSelect(sel, opts, value){
+    var sig = JSON.stringify(opts);
+    if (sel._sig!==sig){
+      sel.textContent = "";
+      opts.forEach(function(o){ var op = el("option", null, o[1]); op.value = o[0]; sel.appendChild(op); });
+      sel._sig = sig;
+    }
+    sel.value = value;
+    if (sel.value!==value) sel.value = opts.length ? opts[0][0] : "";
+  }
+  function duplicateGroups(){
+    var map = {};
+    sortedDoctors().forEach(function(d){ var k = nameKey(d.name); (map[k] = map[k] || []).push(d); });
+    return Object.keys(map).map(function(k){ return map[k]; }).filter(function(g){ return g.length>1; });
+  }
+
+  function renderChrome(){
+    var manage = state.mode==="manage";
+    $("tabManage").hidden = !state.canManage;
+    Array.prototype.forEach.call($("tabs").querySelectorAll("button"), function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-mode")===state.mode)); });
+    $("mbar").hidden = !manage;
+    $("tbl").classList.toggle("manage", manage);
+
+    var dups = manage ? duplicateGroups() : [];
+    var dupBox = $("dup"); dupBox.textContent = "";
+    if (dups.length){
+      var n = dups.reduce(function(a,g){ return a + g.length - 1; }, 0);
+      dupBox.hidden = false;
+      dupBox.appendChild(el("span", null, "يوجد " + n + " أسماء أطباء مكررة."));
+      var mb = el("button", "btn small primary", "دمج المكررين"); mb.type = "button";
+      mb.addEventListener("click", function(){
+        confirmAction("دمج الأطباء المكررين", "سيُدمج كل اسم مكرر في أول سجل له وتُنقل جميع مرضاه إليه.", "دمج", mergeDuplicates, false);
+      });
+      dupBox.appendChild(mb);
+    } else { dupBox.hidden = true; }
+
+    syncSelect($("fDoctorSel"), [["","كل الأطباء"]].concat(sortedDoctors().map(function(d){ return [d.id, d.name]; })), state.doctorFilter);
+    if ($("fDoctorSel").value!==state.doctorFilter) state.doctorFilter = $("fDoctorSel").value;
+    syncSelect($("fPlaceSel"), [["","كل الأماكن"]].concat(state.places.map(function(p){ return [p,p]; })).concat([["__none","غير محدد"]]), state.placeFilter);
+
+    // status cards
+    var base = basePatients();
+    var counts = {all:base.length, admitted:0, discharged:0, passed:0, referred:0};
+    base.forEach(function(p){ counts[fateOf(p)]++; });
+    var defs = [
+      ["all","عرض جميع المرضى",ICON.people],
+      ["admitted","المرضى في المستشفى",ICON.bed],
+      ["discharged","Discharged",ICON.check],
+      ["passed","Passed",ICON.cross],
+      ["referred","Referred",ICON.out]
+    ];
+    var cards = $("cards"); cards.textContent = "";
+    defs.forEach(function(d){
+      var b = el("button","fc c-"+d[0]); b.type = "button"; b.setAttribute("aria-pressed", String(state.filter===d[0]));
+      b.appendChild(iconEl(d[2],"fi"));
+      var w = el("span"); w.appendChild(el("div","num",String(counts[d[0]]))); w.appendChild(el("div","lab",d[1]));
+      b.appendChild(w);
+      b.addEventListener("click", function(){ state.filter = d[0]; render(); });
+      cards.appendChild(b);
+    });
+
+    // census of admitted patients by place
+    var cen = $("census"); cen.textContent = "";
+    cen.appendChild(el("span","title","المرضى في المستشفى حسب المكان:"));
+    var admitted = base.filter(function(p){ return fateOf(p)==="admitted"; });
+    var list = state.places.map(function(pl){ return [pl, admitted.filter(function(p){ return p.place===pl; }).length, placeEmoji(pl)]; });
+    var other = admitted.filter(function(p){ return !p.place || state.places.indexOf(p.place)===-1; }).length;
+    if (other) list.push(["__none", other, "\uD83D\uDCCD"]);
+    list.forEach(function(it){
+      var c = el("button","chip"+(it[1]?"":" zero")); c.type = "button";
+      c.setAttribute("aria-pressed", String(state.placeFilter===it[0]));
+      c.appendChild(el("span",null,it[2]));
+      c.appendChild(el("span",null,it[0]==="__none" ? "غير محدد" : it[0]));
+      c.appendChild(el("b",null,String(it[1])));
+      c.addEventListener("click", function(){
+        if (state.placeFilter===it[0]){ state.placeFilter = ""; }
+        else { state.placeFilter = it[0]; state.filter = "admitted"; }
+        render();
+      });
+      cen.appendChild(c);
+    });
+  }
+
+  function dutyLabel(date){
+    if (!date || date==="__none") return "Duty غير محدد";
+    var parts = date.split("-");
+    if (parts.length!==3) return "Duty "+date;
+    var d = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+    try { return "Duty "+d.toLocaleDateString("ar-u-nu-latn",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); }
+    catch(e){ return "Duty "+date; }
+  }
+  function renderDuties(){
+    var box=$("duties"); box.textContent="";
+    box.appendChild(el("span","title","حصر المرضى حسب duty:"));
+    var base=basePatients(), counts={};
+    base.forEach(function(p){ var k=p.dutyDate||"__none"; counts[k]=(counts[k]||0)+1; });
+    var dates=Object.keys(counts).filter(function(k){return k!=="__none";}).sort();
+    if(counts.__none) dates.push("__none");
+    if(!dates.length) box.appendChild(el("span","dash","لم تُسجّل مناوبات بعد."));
+    var icons=["📅","🗓️","📆","🩺","🏥","🔹","🔸","⭐"];
+    dates.forEach(function(date,i){
+      var c=el("button","duty-chip"+(counts[date]?"":" zero"));
+      c.type="button"; c.style.setProperty("--duty", "hsl("+(210+(i*53)%300)+" 62% 42%)");
+      c.style.setProperty("--duty-bg", "hsl("+(210+(i*53)%300)+" 70% 95%)");
+      c.setAttribute("aria-pressed",String(state.dutyFilter===date));
+      c.appendChild(el("span",null,date==="__none"?"❔":icons[i%icons.length]));
+      c.appendChild(el("span",null,dutyLabel(date)));
+      c.appendChild(el("b",null,String(counts[date])));
+      c.addEventListener("click",function(){
+        state.dutyFilter=date;
+        state.filter="all"; state.doctorFilter=""; state.placeFilter=""; state.q="";
+        if ($("q")) $("q").value="";
+        render(); window.scrollTo(0,0);
+      });
+      box.appendChild(c);
+    });
+    if(state.dutyFilter){
+      var clear=el("button","btn small","العودة إلى كل المناوبات"); clear.type="button";
+      clear.addEventListener("click",function(){state.dutyFilter="";render();window.scrollTo(0,0);});
+      box.appendChild(clear);
+    }
+    renderDutyPage();
+  }
+
+  function renderDutyPage(){
+    var box=$("dutyPage"); box.textContent="";
+    if(!state.dutyFilter){ box.hidden=true; return; }
+    box.hidden=false;
+    var info=el("div");
+    info.appendChild(el("h2",null,"📅 صفحة المناوبة — "+dutyLabel(state.dutyFilter)));
+    var count=state.patients.filter(function(p){return (p.dutyDate||"__none")===state.dutyFilter;}).length;
+    info.appendChild(el("div","sub","عدد المرضى في هذه المناوبة: "+count+" — قائمة الأطباء مشتركة وثابتة بين جميع المناوبات."));
+    box.appendChild(info);
+    if(state.canManage){
+      var add=el("button","btn primary","+ إضافة مريض لهذه المناوبة"); add.type="button";
+      add.addEventListener("click",function(){openPatient(null);}); box.appendChild(add);
+    }
+    var back=el("button","btn","العودة إلى صفحات المناوبات"); back.type="button";
+    back.addEventListener("click",function(){state.dutyFilter="";render();window.scrollTo(0,0);}); box.appendChild(back);
+  }
+
+  function badge(f){
+    var d = FATES[f];
+    var b = el("span","badge f-"+f);
+    b.appendChild(iconEl(d.icon,"bi")); b.appendChild(document.createTextNode(d.label));
+    return b;
+  }
+
+  function renderTable(){
+    var manage = state.mode==="manage";
+    var cols = manage ? 10 : 9;
+    var tbody = $("tbody"); tbody.textContent = "";
+    var all = sortedDoctors();
+    var filtering = state.filter!=="all" || !!state.placeFilter || !!state.dutyFilter || !!state.q.trim();
+    var drawn = 0;
+    var st = $("state");
+
+    all.forEach(function(d, di){
+      if (state.doctorFilter && d.id!==state.doctorFilter) return;
+      var mine = state.patients.filter(function(p){ return p.doctorId===d.id; })
+        .sort(function(a,b){ return (a.createdAt||0)-(b.createdAt||0); });
+      var shown = mine.filter(matches);
+      if (!manage && filtering && !shown.length) return;
+      var hosp = mine.filter(function(p){ return fateOf(p)==="admitted"; }).length;
+      var rows = shown.length || 1;
+      var hue = HUES[di % HUES.length];
+
+      for (var i=0;i<rows;i++){
+        var tr = el("tr", (i===0 ? "docstart " : "") + (shown.length ? "r-"+fateOf(shown[i]) : ""));
+        tr.style.setProperty("--h", String(hue));
+        if (i===0){
+          var td = el("td","doc"); td.rowSpan = rows;
+          var head = el("div","dhead");
+          head.appendChild(iconEl(ICON.steth,"dico"));
+          head.appendChild(el("div","dname",d.name));
+          td.appendChild(head);
+          td.appendChild(el("div","dstat","في المستشفى: "+hosp+" من "+mine.length));
+          if (manage){
+            var act = el("div","dact");
+            var add = el("button","btn small","+ مريض"); add.type = "button";
+            add.addEventListener("click", function(id){ return function(){ openPatient(null,id); }; }(d.id));
+            var ren = el("button","btn small","تعديل الاسم"); ren.type = "button";
+            ren.addEventListener("click", function(doc){ return function(){ openDoctor(doc); }; }(d));
+            var del = el("button","btn small danger","حذف"); del.type = "button";
+            del.addEventListener("click", function(doc,list){ return function(){
+              confirmAction("حذف الطبيب", "سيتم حذف الطبيب «"+doc.name+"» وجميع مرضاه ("+list.length+"). لا يمكن التراجع.", "حذف", function(){
+                return backend.deletePatients(list.map(function(p){ return p.id; })).then(function(){ return backend.deleteDoctors([doc.id]); }).then(function(){ toast("تم حذف الطبيب"); });
+              }, true);
+            }; }(d,mine));
+            act.appendChild(add); act.appendChild(ren); act.appendChild(del);
+            td.appendChild(act);
+          }
+          tr.appendChild(td);
+        }
+        if (!shown.length){
+          var e = el("td","empty c", mine.length ? "لا توجد نتائج مطابقة" : "لا يوجد مرضى لهذا الطبيب بعد");
+          e.colSpan = cols-1; tr.appendChild(e);
+        } else {
+          var p = shown[i], f = fateOf(p);
+          var dutyTd=el("td","c"); dutyTd.appendChild(el("span","duty-label",(p.dutyDate ? "📅 "+p.dutyDate : "❔ غير محدد"))); tr.appendChild(dutyTd);
+          tr.appendChild(el("td","num c",String(i+1)));
+          tr.appendChild(el("td","pt c",p.name||""));
+          tr.appendChild(el("td","c",p.complaint||""));
+          tr.appendChild(el("td","c",p.diagnosis||""));
+          var tp = el("td","place c");
+          if (p.place){ tp.appendChild(el("span",null,placeEmoji(p.place)+" ")); tp.appendChild(document.createTextNode(p.place)); }
+          else tp.appendChild(el("span","dash","—"));
+          tr.appendChild(tp);
+          var tf = el("td","c"); tf.appendChild(badge(f)); tr.appendChild(tf);
+          tr.appendChild(el("td","notes c",p.notes||""));
+          if (manage){
+            var ta = el("td","act c");
+            var eb = el("button","btn small","تعديل"); eb.type = "button";
+            eb.addEventListener("click", function(pp){ return function(){ openPatient(pp); }; }(p));
+            var db_ = el("button","btn small danger","حذف"); db_.type = "button";
+            db_.addEventListener("click", function(pp){ return function(){
+              confirmAction("حذف المريض", "هل تريد حذف سجل «"+pp.name+"»؟", "حذف", function(){
+                return backend.deletePatients([pp.id]).then(function(){ toast("تم حذف المريض"); });
+              }, true);
+            }; }(p));
+            ta.appendChild(eb); ta.appendChild(db_); tr.appendChild(ta);
+          }
+        }
+        tbody.appendChild(tr); drawn++;
+      }
+    });
+
+    if (!all.length){
+      st.hidden = false;
+      st.textContent = state.ready ? (state.canManage ? "لا يوجد أطباء بعد. افتح صفحة «الإدارة» لإضافة طبيب ثم مرضاه." : "لا توجد بيانات بعد.") : "جارٍ التحميل…";
+    } else if (!drawn){
+      st.hidden = false; st.textContent = "لا توجد نتائج مطابقة للتصفية الحالية.";
+    } else { st.hidden = true; }
+  }
+  function render(){ renderChrome(); renderDuties(); renderTable(); }
+
+  /* ---------------- dialogs ---------------- */
+  function setBusy(btn, on){ busy = on; if (btn) btn.disabled = on; }
+  Array.prototype.forEach.call(document.querySelectorAll("dialog"), function(dlg){
+    Array.prototype.forEach.call(dlg.querySelectorAll("[data-close]"), function(b){ b.addEventListener("click", function(){ dlg.close(); }); });
+  });
+
+  var editingDoc = null;
+  function openDoctor(doc){
+    editingDoc = doc || null;
+    $("fDoctor").reset(); $("docErr").textContent = "";
+    $("dlgDoctorTitle").textContent = doc ? "تعديل اسم الطبيب" : "إضافة طبيب";
+    if (doc) $("docName").value = doc.name || "";
+    $("dlgDoctor").showModal(); $("docName").focus();
+  }
+  $("fDoctor").addEventListener("submit", function(e){
+    e.preventDefault();
+    if (busy) return;
+    var name = $("docName").value.replace(/\s+/g," ").trim();
+    if (!name){ $("docErr").textContent = "اكتب اسم الطبيب."; return; }
+    var key = nameKey(name);
+    var dup = state.doctors.some(function(d){ return nameKey(d.name)===key && (!editingDoc || d.id!==editingDoc.id); });
+    if (dup){ $("docErr").textContent = "هذا الطبيب مسجَّل مسبقًا ولا يمكن تكراره."; return; }
+    $("docErr").textContent = "";
+    var rec = editingDoc ? Object.assign({}, editingDoc, {name:name}) : {id:"d_"+hash(key)+"_"+key.length, name:name, createdAt:Date.now()};
+    var wasEdit = !!editingDoc;
+    setBusy($("docSave"), true);
+    backend.saveDoctor(rec).then(function(){ $("dlgDoctor").close(); toast(wasEdit ? "تم تعديل الاسم" : "تمت إضافة الطبيب"); })
+      .catch(function(){}).then(function(){ setBusy($("docSave"), false); });
+  });
+
+  var editingPat = null;
+  function openPatient(p, doctorId){
+    if (!state.doctors.length){ toast("أضف طبيبًا أولًا"); openDoctor(null); return; }
+    editingPat = p || null;
+    $("fPatient").reset(); $("patErr").textContent = "";
+    var sel = $("pDoctor"); sel.textContent = "";
+    sortedDoctors().forEach(function(d){ var o = el("option",null,d.name); o.value = d.id; sel.appendChild(o); });
+    var ps = $("pPlace"); ps.textContent = "";
+    var o0 = el("option",null,"— غير محدد —"); o0.value = ""; ps.appendChild(o0);
+    var plist = state.places.slice();
+    if (p && p.place && plist.indexOf(p.place)===-1) plist.push(p.place);
+    plist.forEach(function(pl){ var o = el("option",null,pl); o.value = pl; ps.appendChild(o); });
+    $("dlgPatientTitle").textContent = p ? "تعديل بيانات المريض" : "إضافة مريض";
+    sel.value = p ? p.doctorId : (doctorId || sortedDoctors()[0].id);
+    $("pDuty").value = p ? (p.dutyDate||"") : (state.dutyFilter && state.dutyFilter!=="__none" ? state.dutyFilter : new Date().toISOString().slice(0,10));
+    if (p){
+      $("pName").value = p.name||""; $("pComplaint").value = p.complaint||""; $("pDiagnosis").value = p.diagnosis||"";
+      ps.value = p.place||""; $("pFate").value = fateOf(p); $("pNotes").value = p.notes||"";
+    }
+    $("dlgPatient").showModal(); $("pName").focus();
+  }
+  $("fPatient").addEventListener("submit", function(e){
+    e.preventDefault();
+    if (busy) return;
+    var name = $("pName").value.trim();
+    if (!name){ $("patErr").textContent = "اكتب اسم المريض."; return; }
+    var rec = {
+      id: editingPat ? editingPat.id : uid(),
+      doctorId: $("pDoctor").value, dutyDate:$("pDuty").value, name:name,
+      complaint:$("pComplaint").value.trim(), diagnosis:$("pDiagnosis").value.trim(),
+      place:$("pPlace").value, fate:$("pFate").value, notes:$("pNotes").value.trim(),
+      createdAt: editingPat ? (editingPat.createdAt||Date.now()) : Date.now()
+    };
+    var wasEdit = !!editingPat;
+    setBusy($("patSave"), true);
+    backend.savePatients([rec]).then(function(){ $("dlgPatient").close(); toast(wasEdit ? "تم حفظ التعديل" : "تمت إضافة المريض"); })
+      .catch(function(){}).then(function(){ setBusy($("patSave"), false); });
+  });
+
+  /* confirm */
+  var confirmCb = null;
+  function confirmAction(title, text, yes, cb, danger){
+    $("confirmTitle").textContent = title; $("confirmText").textContent = text;
+    $("confirmYes").textContent = yes;
+    $("confirmYes").className = "btn " + (danger ? "danger" : "primary");
+    confirmCb = cb; $("dlgConfirm").showModal();
+  }
+  $("dlgConfirm").addEventListener("close", function(){
+    var ok = $("dlgConfirm").returnValue === "yes", cb = confirmCb;
+    confirmCb = null; $("dlgConfirm").returnValue = "";
+    if (ok && cb){ var r = cb(); if (r && r.catch) r.catch(function(){}); }
+  });
+
+  function mergeDuplicates(){
+    var groups = duplicateGroups();
+    var moved = [], removeIds = [];
+    groups.forEach(function(g){
+      var keep = g[0];
+      g.slice(1).forEach(function(d){
+        removeIds.push(d.id);
+        state.patients.forEach(function(p){ if (p.doctorId===d.id) moved.push(Object.assign({}, p, {doctorId:keep.id})); });
+      });
+    });
+    return (moved.length ? backend.savePatients(moved) : Promise.resolve())
+      .then(function(){ return backend.deleteDoctors(removeIds); })
+      .then(function(){ toast("تم دمج الأطباء المكررين"); });
+  }
+
+  /* ---------------- controls ---------------- */
+  Array.prototype.forEach.call($("tabs").querySelectorAll("button"), function(b){
+    b.addEventListener("click", function(){ state.mode = b.getAttribute("data-mode"); render(); window.scrollTo(0,0); });
+  });
+  $("fDoctorSel").addEventListener("change", function(e){ state.doctorFilter = e.target.value; render(); });
+  $("fPlaceSel").addEventListener("change", function(e){
+    state.placeFilter = e.target.value;
+    if (state.placeFilter && state.filter==="all") state.filter = "admitted";
+    render();
+  });
+  $("q").addEventListener("input", function(e){ state.q = e.target.value; render(); });
+  $("addDoctorTop").addEventListener("click", function(){ openDoctor(null); });
+  $("addPatientTop").addEventListener("click", function(){ openPatient(null); });
+
+  /* ---------------- boot ---------------- */
+  $("logoIc").innerHTML = ICON.pulse;
+  try { $("today").textContent = new Date().toLocaleDateString("ar-u-nu-latn", {weekday:"long", day:"numeric", month:"long", year:"numeric"}); } catch(e){}
+  backend = localBackend();
+  $("storeNote").textContent = "يُحفظ السجل على هذا الجهاز فقط.";
+  render();
+
+  (function upgrade(){
+    if (!window.claude || !window.claude.use) return;
+    window.claude.use("db").then(function(db){
+      if (!db) return;
+      var local = {doctors:state.doctors.slice(), patients:state.patients.slice()};
+      state.doctors = []; state.patients = []; state.places = DEFAULT_PLACES.slice(); state.ready = false; state.sig = {};
+      backend = dbBackend(db);
+      $("storeNote").textContent = "يُحفظ السجل في قاعدة بيانات الصفحة ويظهر لكل من يملك صلاحية فتحها.";
+      render();
+      if (local.doctors.length || local.patients.length){
+        try { localStorage.removeItem("patient-registry-v1"); } catch(e){}
+        local.doctors.forEach(function(d){ backend.saveDoctor(d).catch(function(){}); });
+        if (local.patients.length) backend.savePatients(local.patients).catch(function(){});
+      }
+      return window.claude.use("user").then(function(u){
+        if (!u || typeof u.can!=="function") return;
+        return Promise.resolve(u.can("data.write")).then(function(w){
+          if (w===false){ state.canManage = false; state.mode = "view"; render(); }
+        });
+      });
+    }).catch(function(e){ console.error(e); });
+  })();
+})();
+</script>
+</body>
+</html>
